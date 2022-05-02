@@ -58,12 +58,22 @@ def get_patients(lookup_directories):
                     ds.PatientName.given_name.title(),
                     ds.PatientName.family_name.title(),
                     ds.PatientID,
-                    "0",
                     [d],
                 )
             )
 
     return patients
+
+
+def anonymize_patients(patients):
+    """
+    Generate an anonymized id for each patient
+    :param patients: list of Patient objects
+
+    :return: None
+    """
+    for p in enumerate(patients):
+        p[1].anonymize(p[0])
 
 
 def read_patients(args):
@@ -88,7 +98,6 @@ def read_patients(args):
 
     patients = get_patients(lookup_directories)
 
-    for p in patients:
-        print(p)
+    anonymize_patients(patients)
 
     return 0

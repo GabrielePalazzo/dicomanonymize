@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import time
 
 import functions as func
 
@@ -34,5 +35,7 @@ def parse_args(args=None):
 
 if __name__ == "__main__":
     arguments = parse_args()
-
+    anonymize_patients_start = time.time()
     func.read_patients(arguments)
+    anonymize_patients_final = time.time()
+    print(f"> Anonymize_Patients took: {anonymize_patients_final - anonymize_patients_start:.4}s")
