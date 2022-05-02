@@ -1,12 +1,14 @@
 import argparse
 from pathlib import Path
 
+import functions as func
+
 
 def parse_args(args=None):
     """
     Parse command line arguments
 
-    :param: args: already parsed args
+    :param args: already parsed args
 
     :return: arguments
     """
@@ -34,4 +36,4 @@ def parse_args(args=None):
 if __name__ == "__main__":
     arguments = parse_args()
 
-    func.read_patients()
+    func.read_patients(arguments)
