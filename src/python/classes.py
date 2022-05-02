@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from pydicom import dcmread
+# from pydicom import dcmread
 from os import listdir
 
 
@@ -35,6 +35,7 @@ class Patient:
             :param path: pathlib Path to the image
             :return: None
             """
+            print(path)
 
         images = []
         for d in self.directories:
@@ -42,6 +43,7 @@ class Patient:
             for f in files:
                 if f.endswith(".dcm"):
                     images.append(d / f)
-            print(images)
 
             # anonymize all images
+            for image in images:
+                anonymize_image(image)
