@@ -14,6 +14,8 @@ def anonymize_image(patient, output_dir, path):
     """
     Anonymize a single image
 
+    :param patient: Patient to be anonymized
+    :param output_dir: Path of the output directory
     :param path: pathlib Path to the image
     :return: None
     """
