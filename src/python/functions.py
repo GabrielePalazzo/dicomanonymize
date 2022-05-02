@@ -110,7 +110,4 @@ def read_patients(args):
 
     patients = get_patients(lookup_directories)
 
-    anonymize_id_patients(patients)
-    anonymize_patients(patients)
-
-    return 0
+    return patients

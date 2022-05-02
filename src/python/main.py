@@ -33,9 +33,22 @@ def parse_args(args=None):
     return args
 
 
+def anonymize(args):
+    """
+    Anonymize patients data
+
+    :param args: command line arguments
+    :return: None
+    """
+
+    patients = func.read_patients(args)
+    func.anonymize_id_patients(patients)
+    func.anonymize_patients(patients)
+
+
 if __name__ == "__main__":
     arguments = parse_args()
     anonymize_patients_start = time.time()
-    func.read_patients(arguments)
+    anonymize(arguments)
     anonymize_patients_final = time.time()
     print(f"> Anonymize_Patients took: {anonymize_patients_final - anonymize_patients_start:.4}s")
