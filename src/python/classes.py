@@ -10,7 +10,7 @@ from functools import partial
 VALUES_TO_ANONYMIZE = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex", "PatientAge"]
 
 
-def anonymize_image(patient, path):
+def anonymize_image(patient, output_dir, path):
     """
     Anonymize a single image
 
@@ -27,11 +27,9 @@ def anonymize_image(patient, path):
     temp_dir = re.sub(patient.given_name().lower(), patient.anonymized_id, temp_dir)
     path = path.parent.parent / temp_dir / path.name
 
-    temp_dir = path.parent.name.lower()
+    temp_dir = path.parent.parent.name.lower()
     temp_dir = re.sub(patient.last_name().lower(), patient.anonymized_id, temp_dir)
-    path = path.parent.parent.parent / temp_dir / path.parent.name / path.name
-
-    output_path = path
+    output_path = output_dir / temp_dir / path.parent.name / path.name
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # print("Writing anonymized image", output_path)
@@ -54,10 +52,11 @@ class Patient:
 
         self.anonymized_id = str(index)
 
-    def anonymize(self, parallel=True):
+    def anonymize(self, output_dir, parallel=True):
         """
         Anonymize all patient data
 
+        :param output_dir: output directory
         :param parallel: use CPU multithreading
         :return: None
         """
@@ -73,12 +72,10 @@ class Patient:
             if parallel:
                 cpu_number = max(psutil.cpu_count() - 2, 1)
                 with Pool(cpu_number) as p:
-                    p.map(partial(anonymize_image, self), images)
+                    p.map(partial(anonymize_image, self, output_dir), images)
             else:
                 for image in images:
-                    anonymize_image(self, image)
-                # break
-        # print(self)
+                    anonymize_image(self, output_dir, image)
 
     def given_name(self):
         """

@@ -5,11 +5,36 @@ from pydicom import dcmread
 from classes import Patient, VALUES_TO_ANONYMIZE
 
 
+def get_io_dirs(args):
+    """
+    Get input and output directories
+
+    :param args: command line arguments
+    :return: Path for input directory, Path for output directory
+    """
+    if args.input_directory is not None:
+        input_dir = args.input_directory
+    else:
+        # if no input directory is specified, default to current working directory
+        print(f"Using {Path.cwd()} as input directory")
+        input_dir = Path.cwd()
+        # for testing only
+        input_dir = Path("C:\\") / "Users" / "palazzo.gabriele" / "Downloads" / "TestMimDicom"
+        # input_dir = Path("E:\\") / "TestMimDicom"
+    if args.output_directory is not None:
+        output_dir = args.output_directory
+    else:
+        # if no output directory is specified, default to current working directory
+        print(f"Using {input_dir} as output directory")
+        output_dir = input_dir
+    return input_dir, output_dir
+
+
 def get_directories(path):
     """
     Get a list of subdirectories containing dicom images
-    :param path: Path
 
+    :param path: Path
     :return: list of directories containing dicom images
     """
 
@@ -32,8 +57,8 @@ def get_directories(path):
 def get_patients(lookup_directories):
     """
     Get list of patients to be anonymized
-    :param lookup_directories: list of directories
 
+    :param lookup_directories: list of directories
     :return: list of Patient objects
     """
 
@@ -69,42 +94,37 @@ def get_patients(lookup_directories):
 def anonymize_id_patients(patients):
     """
     Generate an anonymized id for each patient
-    :param patients: list of Patient objects
 
+    :param patients: list of Patient objects
     :return: None
     """
     for p in enumerate(patients):
         p[1].generate_anonymized_id(p[0])
 
 
-def anonymize_patients(patients):
+def anonymize_patients(args, patients, parallel):
     """
     Generate an anonymized id for each patient
-    :param patients: list of Patient objects
 
+    :param patients: list of Patient objects
     :return: None
     """
+
+    _, output_dir = get_io_dirs(args)
+
     for p in patients:
-        p.anonymize()
+        p.anonymize(output_dir, parallel)
 
 
 def read_patients(args):
     """
     Read patients information
-    :param args: command line arguments
 
+    :param args: command line arguments
     :return: list of patients
     """
 
-    if args.input_directory is not None:
-        input_dir = args.input_directory
-    else:
-        # if no input directory is specified, default to current working directory
-        print(f"Using {Path.cwd()} as input directory")
-        input_dir = Path.cwd()
-
-    # for testing only
-    input_dir = Path("C:\\") / "Users" / "palazzo.gabriele" / "Downloads" / "TestMimDicom"
+    input_dir, _ = get_io_dirs(args)
 
     lookup_directories = get_directories(input_dir)
 
