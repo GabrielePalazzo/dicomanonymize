@@ -39,22 +39,41 @@ def parse_args(args=None):
     return args
 
 
-def anonymize():
+def anonymize(input_directory, output_directory, parallel=True):
     """
     Anonymize patients data
 
+    :param input_directory: Path of the input directory
+    :param output_directory: Path of the output directory
+    :param parallel: use CPU multithreading
     :return: None
     """
 
-    args = parse_args()
-    parallel = not args.single_thread
-    patients = func.read_patients(args)
+    patients = func.read_patients(input_directory)
     func.anonymize_id_patients(patients)
-    func.anonymize_patients(args, patients, parallel)
+    func.anonymize_patients(output_directory, patients, parallel)
 
 
 if __name__ == "__main__":
     anonymize_patients_start = time.time()
-    anonymize()
+
+    arguments = parse_args()
+    if arguments.input_directory is not None:
+        input_dir = arguments.input_directory
+    else:
+        # if no input directory is specified, default to current working directory
+        print(f"Using {Path.cwd()} as input directory")
+        input_dir = Path.cwd()
+        # for testing only
+        input_dir = Path("C:\\") / "Users" / "palazzo.gabriele" / "Downloads" / "TestMimDicom"
+        # input_dir = Path("E:\\") / "TestMimDicom"
+    if arguments.output_directory is not None:
+        output_dir = arguments.output_directory
+    else:
+        # if no output directory is specified, default to current working directory
+        print(f"Using {input_dir} as output directory")
+        output_dir = input_dir
+
+    anonymize(input_dir, output_dir, not arguments.single_thread)
     anonymize_patients_final = time.time()
     print(f"> Anonymize_Patients took: {anonymize_patients_final - anonymize_patients_start:.4}s")
