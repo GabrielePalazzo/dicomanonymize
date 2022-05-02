@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 import time
 
-import anonymizer as anon
+from anonymizer import anonymize
 
 
 def parse_args(args=None):
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         print(f"Using {input_dir} as output directory")
         output_dir = input_dir
 
-    anon.anonymize(input_dir, output_dir, not arguments.single_thread)
+    anonymize(input_dir, output_dir, not arguments.single_thread)
 
     anonymize_patients_final = time.time()
     print(f"> Anonymize_Patients took: {anonymize_patients_final - anonymize_patients_start:.4}s")
