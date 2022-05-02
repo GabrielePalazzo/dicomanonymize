@@ -26,6 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
+          python -m pip install -r src/Requirements.txt
           python -m pip install prospector
       - name: Control code structure
         run: |
