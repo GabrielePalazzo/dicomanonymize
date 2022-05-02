@@ -7,7 +7,22 @@ from multiprocessing import Pool
 from functools import partial
 
 
-VALUES_TO_ANONYMIZE = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex", "PatientAge"]
+VALUES_TO_ANONYMIZE = [
+    "PatientName",
+    "PatientID",
+    "PatientBirthDate",
+    "PatientSex",
+    "PatientAge",
+    "AcquisitionDate",
+    "SeriesDate",
+    "StudyDate",
+    "ContentDate",
+    "StudyTime",
+    "SeriesTime",
+    "AcquisitionTime",
+    "ContentTime",
+    "AccessionNumber",
+]
 
 
 def anonymize_image(patient, output_dir, path):
@@ -22,11 +37,15 @@ def anonymize_image(patient, output_dir, path):
 
     ds = dcmread(path)
     for val in VALUES_TO_ANONYMIZE:
-        ds[val].value = patient.anonymized_id
+        try:
+            ds[val].value = patient.anonymized_id
+        except Exception:
+            print(f"{val} not found in {path}")
     # print(ds)
     temp_dir = path.parent.name.lower()
     temp_dir = re.sub(patient.last_name().lower(), patient.anonymized_id, temp_dir)
     temp_dir = re.sub(patient.given_name().lower(), patient.anonymized_id, temp_dir)
+    temp_dir = re.sub("_[0-9]{4}-[0-9]{2}-[0-9]{2}_", f"_{patient.anonymized_id}_", temp_dir)
     path = path.parent.parent / temp_dir / path.name
 
     temp_dir = path.parent.parent.name.lower()

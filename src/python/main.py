@@ -39,7 +39,7 @@ def parse_args(args=None):
     return args
 
 
-def anonymize(input_directory, output_directory, parallel=True):
+def anonymize(input_directory, output_directory=None, parallel=True):
     """
     Anonymize patients data
 
@@ -48,6 +48,9 @@ def anonymize(input_directory, output_directory, parallel=True):
     :param parallel: use CPU multithreading
     :return: None
     """
+
+    if output_directory is None:
+        output_directory = input_directory
 
     patients = func.read_patients(input_directory)
     func.anonymize_id_patients(patients)
@@ -75,5 +78,6 @@ if __name__ == "__main__":
         output_dir = input_dir
 
     anonymize(input_dir, output_dir, not arguments.single_thread)
+
     anonymize_patients_final = time.time()
     print(f"> Anonymize_Patients took: {anonymize_patients_final - anonymize_patients_start:.4}s")
