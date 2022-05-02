@@ -1,13 +1,14 @@
 from dataclasses import dataclass
-# from pydicom import dcmread
+from pydicom import dcmread
 from os import listdir
+
+
+VALUES_TO_ANONYMIZE = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex", "PatientAge"]
 
 
 @dataclass
 class Patient:
-    first_name: str
-    last_name: str
-    patient_id: str
+    patient_data: dict
     directories: list
     anonymized_id: str = ""
 
@@ -35,7 +36,11 @@ class Patient:
             :param path: pathlib Path to the image
             :return: None
             """
-            print(path)
+
+            ds = dcmread(path)
+            for val in VALUES_TO_ANONYMIZE:
+                ds[val].value = self.anonymized_id
+            print(ds)
 
         images = []
         for d in self.directories:
@@ -47,3 +52,14 @@ class Patient:
             # anonymize all images
             for image in images:
                 anonymize_image(image)
+                break
+        # print(self)
+
+    def last_name(self):
+        """
+        Patient last name
+
+        :return: str containing patient's last name
+        """
+
+        return self.patient_data["PatientName"].family_name.title()

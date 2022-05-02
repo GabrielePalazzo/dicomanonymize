@@ -2,7 +2,7 @@ from pathlib import Path
 from os import listdir
 from pydicom import dcmread
 
-from classes import Patient
+from classes import Patient, VALUES_TO_ANONYMIZE
 
 
 def get_directories(path):
@@ -48,16 +48,17 @@ def get_patients(lookup_directories):
         ds = dcmread(d / images[0])
         already_defined = False
         for p in patients:
-            if p.patient_id == ds.PatientID:
+            if p.patient_data["PatientID"] == ds.PatientID:
                 already_defined = True
                 p.directories.append(d)
                 break
         if not already_defined:
+            temp_dict = {}
+            for val in VALUES_TO_ANONYMIZE:
+                temp_dict[val] = ds[val].value
             patients.append(
                 Patient(
-                    ds.PatientName.given_name.title(),
-                    ds.PatientName.family_name.title(),
-                    ds.PatientID,
+                    temp_dict,
                     [d],
                 )
             )
