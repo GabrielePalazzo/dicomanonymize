@@ -7,7 +7,6 @@ import functions as func
 def parse_args(args=None):
     """
     Parse command line arguments
-
     :param args: already parsed args
 
     :return: arguments
