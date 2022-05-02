@@ -65,7 +65,7 @@ def get_patients(lookup_directories):
     return patients
 
 
-def anonymize_patients(patients):
+def anonymize_id_patients(patients):
     """
     Generate an anonymized id for each patient
     :param patients: list of Patient objects
@@ -73,7 +73,18 @@ def anonymize_patients(patients):
     :return: None
     """
     for p in enumerate(patients):
-        p[1].anonymize(p[0])
+        p[1].generate_anonymized_id(p[0])
+
+
+def anonymize_patients(patients):
+    """
+    Generate an anonymized id for each patient
+    :param patients: list of Patient objects
+
+    :return: None
+    """
+    for p in patients:
+        p.anonymize()
 
 
 def read_patients(args):
@@ -98,6 +109,7 @@ def read_patients(args):
 
     patients = get_patients(lookup_directories)
 
+    anonymize_id_patients(patients)
     anonymize_patients(patients)
 
     return 0
