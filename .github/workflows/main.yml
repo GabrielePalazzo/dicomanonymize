@@ -32,8 +32,3 @@ jobs:
         run: |
           prospector
           
-      - name: Copy patients
-        run: |
-          cd src
-          python python/main.py
-          
