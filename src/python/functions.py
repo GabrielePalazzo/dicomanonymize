@@ -6,7 +6,7 @@ from multiprocessing.pool import ThreadPool
 from functools import partial
 import numpy as np
 import random
-from numba import jit, int64, void
+from numba import jit, int32, void
 
 from classes import Patient, VALUES_TO_ANONYMIZE
 
@@ -82,7 +82,7 @@ def get_patients(lookup_directories):
     return patients
 
 
-@jit(void(int64[:], int64), nopython=True)
+@jit(void(int32[:], int32), nopython=True)
 def shuffle(array, num_times):
     """
     Shuffle the array
@@ -109,7 +109,7 @@ def generate_ids(seed, length):
     :return: list of ids
     """
 
-    ids = np.arange(length)
+    ids = np.arange(length, dtype=np.int32)
 
     # this ensures constant behavior
     # comment the line if you want "more random" numbers
