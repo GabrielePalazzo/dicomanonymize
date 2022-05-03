@@ -3,7 +3,7 @@ import os.path
 from pathlib import Path
 import time
 
-from anonymizer import anonymize
+from .anonymizer import anonymize
 
 
 def parse_args(args=None):

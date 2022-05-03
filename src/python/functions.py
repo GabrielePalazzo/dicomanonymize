@@ -8,7 +8,7 @@ import numpy as np
 import random
 from numba import jit, int32, void
 
-from classes import Patient, VALUES_TO_ANONYMIZE
+from .classes import Patient, VALUES_TO_ANONYMIZE
 
 
 def get_directories(path):

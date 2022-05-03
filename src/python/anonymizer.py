@@ -1,4 +1,9 @@
-import functions as func
+from .functions import (
+    read_patients,
+    anonymize_id_patients,
+    anonymize_patients,
+    write_conversion_table,
+)
 
 
 def anonymize(input_directory, output_directory=None, parallel=True):
@@ -15,7 +20,7 @@ def anonymize(input_directory, output_directory=None, parallel=True):
         output_directory = input_directory
     output_directory.mkdir(parents=True, exist_ok=True)
 
-    patients = func.read_patients(input_directory)
-    func.anonymize_id_patients(patients)
-    func.anonymize_patients(output_directory, patients, parallel)
-    func.write_conversion_table(output_directory, patients)
+    patients = read_patients(input_directory)
+    anonymize_id_patients(patients)
+    anonymize_patients(output_directory, patients, parallel)
+    write_conversion_table(output_directory, patients)
