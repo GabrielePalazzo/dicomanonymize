@@ -222,6 +222,5 @@ def write_conversion_table(output_directory, patients):
                 "Cannot find a unique name for the conversion table. Aborting write_conversion_table..."
             )
             return
-    print(df)
 
     df.to_csv(output_directory / csv_name, index=False)
