@@ -28,7 +28,8 @@ VALUES_TO_ANONYMIZE = [
 @dataclass
 class Patient:
     patient_data: dict
-    directories: list
+    source_directories: list
+    destination_directories: list
     anonymized_id: str = ""
 
     def generate_anonymized_id(self, index):
@@ -66,23 +67,46 @@ class Patient:
                     ds[val].value = self.anonymized_id
                 except Exception:
                     print(f"{val} not found in {path}")
-            # print(ds)
-            temp_dir = path.parent.name.lower()
-            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir)
-            temp_dir = re.sub(self.given_name().lower(), self.anonymized_id, temp_dir)
-            temp_dir = re.sub("_[0-9]{4}-[0-9]{2}-[0-9]{2}_", f"_{self.anonymized_id}_", temp_dir)
-            path = path.parent.parent / temp_dir / path.name
 
-            temp_dir = path.parent.parent.name.lower()
-            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir)
-            output_path = output_directory / temp_dir / path.parent.name / path.name
+            output_path = anonymize_directory(path.parent, output_directory) / path.name
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
             # print("Writing anonymized image", output_path)
             ds.save_as(output_path)
 
+        def anonymize_directory(dir_name, output_directory):
+            """
+            Anonymize the directory
+
+            :param dir_name: Path of the original directory
+            :param output_directory: Path of the output directory
+            :return: Path of the anonymized directory
+            """
+
+            temp_dir = dir_name.name.lower()
+            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir)
+            temp_dir = re.sub(self.given_name().lower(), self.anonymized_id, temp_dir)
+            temp_dir = re.sub("_[0-9]{4}-[0-9]{2}-[0-9]{2}_", f"_{self.anonymized_id}_", temp_dir)
+            dir_name = dir_name.parent / temp_dir
+
+            temp_dir = dir_name.parent.name.lower()
+            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir)
+            output_path = output_directory / temp_dir / dir_name.name
+            return output_path
+
+        def anonymize_destinations(out):
+            """
+            Anonymize self.destination_directories
+
+            :param out: Path of the output directory
+            :return: None
+            """
+
+            for i, d in enumerate(self.destination_directories):
+                self.destination_directories[i] = anonymize_directory(d, out)
+
         images = []
-        for d in self.directories:
+        for d in self.source_directories:
             files = listdir(d)
             for f in files:
                 if f.endswith(".dcm"):
@@ -96,6 +120,8 @@ class Patient:
             else:
                 for image in images:
                     anonymize_image(output_dir, image)
+
+        anonymize_destinations(output_dir)
 
     def given_name(self):
         """

@@ -1,5 +1,7 @@
 from os import listdir
 from pydicom import dcmread
+import pandas as pd
+import datetime
 
 from classes import Patient, VALUES_TO_ANONYMIZE
 
@@ -49,7 +51,8 @@ def get_patients(lookup_directories):
         for p in patients:
             if p.patient_data["PatientID"] == ds.PatientID:
                 already_defined = True
-                p.directories.append(d)
+                p.source_directories.append(d)
+                p.destination_directories.append(d)
                 break
         if not already_defined:
             temp_dict = {}
@@ -58,6 +61,7 @@ def get_patients(lookup_directories):
             patients.append(
                 Patient(
                     temp_dict,
+                    [d],
                     [d],
                 )
             )
@@ -103,3 +107,46 @@ def read_patients(input_dir):
     patients = get_patients(lookup_directories)
 
     return patients
+
+
+def write_conversion_table(output_directory, patients):
+    """
+    Write all patient information to a csv file, in order to be able to de-anonymize data
+
+    :param output_directory: Path of the output directory
+    :param patients: list of Patient objects
+    :return: None
+    """
+
+    df = pd.DataFrame()
+
+    position = 0
+    df.insert(position, "anonymized_id", "")
+    for i, p in enumerate(patients):
+        df.at[i, "anonymized_id"] = p.anonymized_id
+    position += 1
+
+    # df.insert(position, "destination_directories", "")
+    # for i, p in enumerate(patients):
+    #    df.at[i, "destination_directories"] = p.destination_directories
+    # position += 1
+
+    for val in VALUES_TO_ANONYMIZE:
+        df.insert(position, val, "")
+        for i, p in enumerate(patients):
+            df.at[i, val] = str(p.patient_data[val])
+        position += 1
+
+    csv_name = "Anonymization.csv"
+
+    files_list = listdir(output_directory)
+
+    if csv_name in files_list:
+        csv_name = f'Anonymization-{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.csv'
+        if csv_name in listdir(output_directory):
+            print(
+                "Cannot find a unique name for the conversion table. Aborting write_conversion_table..."
+            )
+            return
+
+    df.to_csv(output_directory / csv_name, index=False)
