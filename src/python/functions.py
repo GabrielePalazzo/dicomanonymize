@@ -4,6 +4,9 @@ import pandas as pd
 import datetime
 from multiprocessing.pool import ThreadPool
 from functools import partial
+import numpy as np
+import random
+from numba import jit, int32, void
 
 from classes import Patient, VALUES_TO_ANONYMIZE
 
@@ -66,7 +69,7 @@ def get_patients(lookup_directories):
                 try:
                     temp_dict[val] = ds[val].value
                 except Exception:
-                    print(f"{val} not a found")
+                    print(f"{val} not found")
                     temp_dict[val] = None
             patients.append(
                 Patient(
@@ -79,6 +82,44 @@ def get_patients(lookup_directories):
     return patients
 
 
+@jit(void(int32[:], int32), nopython=True)
+def shuffle(array, num_times):
+    """
+    Shuffle the array
+
+    :param array: np.array of int32 to be shuffled
+    :param num_times: int number of times to shuffle the array
+    :return: None
+    """
+
+    for _ in range(num_times):
+        x = random.randint(0, len(array) - 1)
+        y = random.randint(0, len(array) - 1)
+        temp = array[x]
+        array[x] = array[y]
+        array[y] = temp
+
+
+def generate_ids(seed, length):
+    """
+    Randomly generate ids
+
+    :param seed: int
+    :param length: int length of the generated array
+    :return: list of ids
+    """
+
+    ids = np.arange(length)
+
+    # this ensures constant behavior
+    # comment the line if you want "more random" numbers
+    random.seed(seed)
+
+    shuffle(ids, length * 100)
+
+    return ids
+
+
 def anonymize_id_patients(patients):
     """
     Generate an anonymized id for each patient
@@ -86,8 +127,13 @@ def anonymize_id_patients(patients):
     :param patients: list of Patient objects
     :return: None
     """
-    for p in enumerate(patients):
-        p[1].generate_anonymized_id(p[0])
+
+    seed = 0
+    length = max(len(patients), 1000)
+    ids = generate_ids(seed, length)
+
+    for i, p in enumerate(patients):
+        p.generate_anonymized_id(ids[i])
 
 
 def anonymize_patient(output_dir, parallel, patient):
@@ -176,5 +222,6 @@ def write_conversion_table(output_directory, patients):
                 "Cannot find a unique name for the conversion table. Aborting write_conversion_table..."
             )
             return
+    print(df)
 
     df.to_csv(output_directory / csv_name, index=False)
