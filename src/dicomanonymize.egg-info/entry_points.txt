@@ -1,3 +1,0 @@
-[console_scripts]
-dicomanonymize = python.scripts.main:main
-
