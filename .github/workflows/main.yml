@@ -28,7 +28,12 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install -r src/Requirements.txt
           python -m pip install prospector
+
       - name: Control code structure
         run: |
           prospector
           
+      - name: Generate anonymized tests
+        run: |
+          cd src
+          python python/main.py -i test/Named -o test/test
