@@ -36,7 +36,7 @@ jobs:
       - name: Generate anonymized tests
         run: |
           cd src
-          python python/main.py -i test/Named -o test/test
+          python dicomanonymize/scripts/main.py -i test/Named -o test/test
 
       - name: Run tests
         run: |
