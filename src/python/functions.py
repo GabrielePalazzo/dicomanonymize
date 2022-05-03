@@ -2,6 +2,8 @@ from os import listdir
 from pydicom import dcmread
 import pandas as pd
 import datetime
+from multiprocessing.pool import ThreadPool
+from functools import partial
 
 from classes import Patient, VALUES_TO_ANONYMIZE
 
@@ -80,6 +82,19 @@ def anonymize_id_patients(patients):
         p[1].generate_anonymized_id(p[0])
 
 
+def anonymize_patient(output_dir, parallel, patient):
+    """
+    Generate an anonymized id for each patient
+
+    :param output_dir: Path of the output directory
+    :param patients: Patient to be anonymized
+    :param parallel: use CPU multithreading
+    :return: None
+    """
+
+    patient.anonymize(output_dir, parallel)
+
+
 def anonymize_patients(output_dir, patients, parallel):
     """
     Generate an anonymized id for each patient
@@ -90,8 +105,12 @@ def anonymize_patients(output_dir, patients, parallel):
     :return: None
     """
 
-    for p in patients:
-        p.anonymize(output_dir, parallel)
+    if parallel:
+        with ThreadPool(len(patients)) as p:
+            p.map(partial(anonymize_patient, output_dir, parallel), patients)
+    else:
+        for p in patients:
+            anonymize_patient(output_dir, parallel, p)
 
 
 def read_patients(input_dir):

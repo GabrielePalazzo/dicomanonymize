@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from pydicom import dcmread
 from os import listdir
 import re
-import psutil
 from multiprocessing.pool import ThreadPool
 from functools import partial
 
@@ -114,8 +113,7 @@ class Patient:
 
             # anonymize all images
             if parallel:
-                cpu_number = max(psutil.cpu_count(), 1)
-                with ThreadPool(cpu_number) as p:
+                with ThreadPool(len(images)) as p:
                     p.map(partial(anonymize_image, output_dir), images)
             else:
                 for image in images:
