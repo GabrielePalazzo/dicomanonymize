@@ -37,3 +37,8 @@ jobs:
         run: |
           cd src
           python python/main.py -i test/Named -o test/test
+
+      - name: Run tests
+        run: |
+          cd src
+          python python/test.py
