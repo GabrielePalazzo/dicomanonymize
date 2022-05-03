@@ -1,2 +1,4 @@
 .idea/
 src/python/__pycache__/
+src/test/test_files/
+src/test/test/
