@@ -21,13 +21,18 @@ def get_directories(path):
     directories_for_anonymization = []
 
     for study_or_patient in studies_or_patients:
-        patient_images = listdir(path / study_or_patient)
-        for patient_image in patient_images:
-            patient_data = listdir(path / study_or_patient / patient_image)
-            for d in patient_data:
-                if d.endswith(".dcm"):
-                    directories_for_anonymization.append(path / study_or_patient / patient_image)
-                    break
+        try:
+            patient_images = listdir(path / study_or_patient)
+            for patient_image in patient_images:
+                patient_data = listdir(path / study_or_patient / patient_image)
+                for d in patient_data:
+                    if d.endswith(".dcm"):
+                        directories_for_anonymization.append(
+                            path / study_or_patient / patient_image
+                        )
+                        break
+        except Exception:
+            print("Not a directory")
 
     return directories_for_anonymization
 
@@ -41,7 +46,6 @@ def get_patients(lookup_directories):
     """
 
     patients = []
-
     for d in lookup_directories:
         files = listdir(d)
         images = []
@@ -59,7 +63,11 @@ def get_patients(lookup_directories):
         if not already_defined:
             temp_dict = {}
             for val in VALUES_TO_ANONYMIZE:
-                temp_dict[val] = ds[val].value
+                try:
+                    temp_dict[val] = ds[val].value
+                except Exception:
+                    print(f"{val} not a found")
+                    temp_dict[val] = None
             patients.append(
                 Patient(
                     temp_dict,
@@ -106,7 +114,8 @@ def anonymize_patients(output_dir, patients, parallel):
     """
 
     if parallel:
-        with ThreadPool(len(patients)) as p:
+        num_threads = max(len(patients), 1)
+        with ThreadPool(num_threads) as p:
             p.map(partial(anonymize_patient, output_dir, parallel), patients)
     else:
         for p in patients:

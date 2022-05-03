@@ -66,7 +66,7 @@ class Patient:
                     ds[val].value = self.anonymized_id
                 except Exception:
                     print(f"{val} not found in {path}")
-
+            print(ds)
             output_path = anonymize_directory(path.parent, output_directory) / path.name
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -113,7 +113,8 @@ class Patient:
 
             # anonymize all images
             if parallel:
-                with ThreadPool(len(images)) as p:
+                num_threads = max(len(images), 1)
+                with ThreadPool(num_threads) as p:
                     p.map(partial(anonymize_image, output_dir), images)
             else:
                 for image in images:

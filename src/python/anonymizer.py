@@ -13,6 +13,7 @@ def anonymize(input_directory, output_directory=None, parallel=True):
 
     if output_directory is None:
         output_directory = input_directory
+    output_directory.mkdir(parents=True, exist_ok=True)
 
     patients = func.read_patients(input_directory)
     func.anonymize_id_patients(patients)

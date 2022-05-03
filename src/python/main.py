@@ -45,13 +45,13 @@ if __name__ == "__main__":
 
     arguments = parse_args()
     if arguments.input_directory is not None:
-        input_dir = os.path.join(Path.cwd(), arguments.input_directory)
+        input_dir = Path(os.path.join(Path.cwd(), arguments.input_directory))
     else:
         # if no input directory is specified, default to current working directory
         print(f"Using {Path.cwd()} as input directory")
         input_dir = Path.cwd()
     if arguments.output_directory is not None:
-        output_dir = os.path.join(Path.cwd(), arguments.output_directory)
+        output_dir = Path(os.path.join(Path.cwd(), arguments.output_directory))
     else:
         # if no output directory is specified, default to current working directory
         print(f"Using {input_dir} as output directory")
