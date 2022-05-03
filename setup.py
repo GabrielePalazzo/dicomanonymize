@@ -49,7 +49,7 @@ setup(
     extras_require={"test": ["prospector"]},
     entry_points={
         "console_scripts": [
-            "dicomanonymize = dicomanonymize.scripts.main:main",
+            "dicomanonymize = dicomanonymize.scripts.dicomanonymize_script:main",
         ]
     },
 )
