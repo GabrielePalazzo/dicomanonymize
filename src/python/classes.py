@@ -66,7 +66,6 @@ class Patient:
                     ds[val].value = self.anonymized_id
                 except Exception:
                     print(f"{val} not found in {path}")
-            print(ds)
             output_path = anonymize_directory(path.parent, output_directory) / path.name
             output_path.parent.mkdir(parents=True, exist_ok=True)
 
