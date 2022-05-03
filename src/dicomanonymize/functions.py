@@ -11,6 +11,26 @@ from numba import jit, int32, void
 from .classes import Patient, VALUES_TO_ANONYMIZE
 
 
+def anonymize(input_directory, output_directory=None, parallel=True):
+    """
+    Anonymize patients data
+
+    :param input_directory: Path of the input directory
+    :param output_directory: Path of the output directory
+    :param parallel: use CPU multithreading
+    :return: None
+    """
+
+    if output_directory is None:
+        output_directory = input_directory
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    patients = read_patients(input_directory)
+    anonymize_id_patients(patients)
+    anonymize_patients(output_directory, patients, parallel)
+    write_conversion_table(output_directory, patients)
+
+
 def get_directories(path):
     """
     Get a list of subdirectories containing dicom images
