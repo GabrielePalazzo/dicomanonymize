@@ -55,7 +55,7 @@ class Patient:
             Anonymize a single image
 
             :param patient: Patient to be anonymized
-            :param output_dir: Path of the output directory
+            :param output_directory: Path of the output directory
             :param path: pathlib Path to the image
             :return: None
             """
