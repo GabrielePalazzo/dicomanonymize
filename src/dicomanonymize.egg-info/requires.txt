@@ -1,0 +1,6 @@
+pydicom
+pandas
+numba
+
+[test]
+prospector

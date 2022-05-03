@@ -1,3 +1,4 @@
 .idea/
 src/dicomanonymize/__pycache__/
+src/*.egg-info/
 src/test/test/

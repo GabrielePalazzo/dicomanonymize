@@ -20,7 +20,7 @@ long_description = (repository_root / "README.md").read_text()
 def get_version():
     """Gets the version from the package's __init__ file
     if there is some problem, let it happily fail"""
-    version_file = repository_root / f"{package_root}/{package_name}/__init__.py"
+    version_file = repository_root / f"{package_root} / {package_name} / __init__.py"
     initfile_lines = version_file.open("rt").readlines()
     VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
     for line in initfile_lines:
@@ -49,7 +49,7 @@ setup(
     extras_require={"test": ["prospector"]},
     entry_points={
         "console_scripts": [
-            "dicomanonymize = python.scripts.main:main",
+            "dicomanonymize = dicomanonymize.scripts.main:main",
         ]
     },
 )

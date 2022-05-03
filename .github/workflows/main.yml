@@ -32,11 +32,15 @@ jobs:
       - name: Control code structure
         run: |
           prospector
+
+      - name: Install package
+        run: |
+          python -m pip install .
           
       - name: Generate anonymized tests
         run: |
           cd src
-          python dicomanonymize/scripts/main.py -i test/Named -o test/test
+          dicomanonymize -i test/Named -o test/test
 
       - name: Run tests
         run: |
