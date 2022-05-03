@@ -40,7 +40,7 @@ def parse_args(args=None):
     return args
 
 
-if __name__ == "__main__":
+def main():
     anonymize_patients_start = time.time()
 
     arguments = parse_args()
@@ -61,3 +61,7 @@ if __name__ == "__main__":
 
     anonymize_patients_final = time.time()
     print(f"> Anonymize_Patients took: {anonymize_patients_final - anonymize_patients_start:.4}s")
+
+
+if __name__ == "__main__":
+    main()
