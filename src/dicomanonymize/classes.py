@@ -66,7 +66,7 @@ class Patient:
                 except Exception:
                     print(f"{val} not found in {path}")
             output_path = anonymize_directory(path.parent, output_directory) / path.name
-            self.write_image(output_path, path)
+            self.write_image(ds, output_path)
 
         def anonymize_directory(dir_name, output_directory):
             """
