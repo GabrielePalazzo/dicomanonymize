@@ -50,10 +50,11 @@ class Patient:
         :return: None
         """
 
-        def anonymize_image(output_directory, path):
+        def anonymize_image(input_directory, output_directory, path):
             """
             Anonymize a single image
 
+            :param input_directory: Path of the input directory
             :param output_directory: Path of the output directory
             :param path: pathlib Path to the image
             :return: None
@@ -64,43 +65,35 @@ class Patient:
                 try:
                     ds[val].value = self.anonymized_id
                 except Exception:
-                    print(f"{val} not found in {path}")
-            output_path = anonymize_directory(path.parent, output_directory) / path.name
+                    pass
+                    # print(f"{val} not found in {path}")
+
+            output_path = output_directory / input_directory.parent.name / input_directory.name
+            output_path = anonymize_directory(output_path) / path.name
             self.write_image(ds, output_path)
 
-        def anonymize_directory(dir_name, output_directory):
+        def anonymize_directory(output_directory):
             """
             Anonymize the directory
 
-            :param dir_name: Path of the original directory
             :param output_directory: Path of the output directory
             :return: Path of the anonymized directory
             """
 
-            temp_dir = dir_name.name.lower()
-            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir)
-            temp_dir = re.sub(self.given_name().lower(), self.anonymized_id, temp_dir)
+            temp_dir = output_directory.name
+            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir.lower())
+            temp_dir = re.sub(self.given_name().lower(), self.anonymized_id, temp_dir.lower())
             temp_dir = re.sub("_[0-9]{4}-[0-9]{2}-[0-9]{2}_", f"_{self.anonymized_id}_", temp_dir)
-            dir_name = dir_name.parent / temp_dir
+            output_directory = output_directory.parent / temp_dir
 
-            temp_dir = dir_name.parent.name.lower()
-            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir)
-            output_path = output_directory / temp_dir / dir_name.name
-            return output_path
+            temp_dir = output_directory.parent.name
+            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir.lower())
+            output = output_directory.parent.parent / temp_dir / output_directory.name
 
-        def anonymize_destinations(out):
-            """
-            Anonymize self.destination_directories
-
-            :param out: Path of the output directory
-            :return: None
-            """
-
-            for i, d in enumerate(self.destination_directories):
-                self.destination_directories[i] = anonymize_directory(d, out)
+            return output
 
         images = []
-        for d in self.source_directories:
+        for i, d in enumerate(self.source_directories):
             files = listdir(d)
             for f in files:
                 if f.endswith(".dcm"):
@@ -110,12 +103,13 @@ class Patient:
             if parallel:
                 num_threads = max(len(images), 1)
                 with ThreadPool(num_threads) as p:
-                    p.map(partial(anonymize_image, output_dir), images)
+                    p.map(
+                        partial(anonymize_image, self.destination_directories[i], output_dir),
+                        images,
+                    )
             else:
                 for image in images:
-                    anonymize_image(output_dir, image)
-
-        anonymize_destinations(output_dir)
+                    anonymize_image(self.destination_directories[i], output_dir, image)
 
     def given_name(self):
         """
@@ -144,6 +138,7 @@ class Patient:
         :param output_path: Path of the output image
         :return: None
         """
+
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         # print("Writing anonymized image", output_path)

@@ -91,7 +91,7 @@ def get_patients(lookup_directories):
                 try:
                     temp_dict[val] = ds[val].value
                 except Exception:
-                    print(f"{val} not found")
+                    # print(f"{val} not found")
                     temp_dict[val] = None
             patients.append(
                 Patient(
