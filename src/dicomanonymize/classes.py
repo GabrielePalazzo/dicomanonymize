@@ -54,7 +54,6 @@ class Patient:
             """
             Anonymize a single image
 
-            :param patient: Patient to be anonymized
             :param output_directory: Path of the output directory
             :param path: pathlib Path to the image
             :return: None
@@ -67,10 +66,7 @@ class Patient:
                 except Exception:
                     print(f"{val} not found in {path}")
             output_path = anonymize_directory(path.parent, output_directory) / path.name
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-
-            # print("Writing anonymized image", output_path)
-            ds.save_as(output_path)
+            self.write_image(output_path, path)
 
         def anonymize_directory(dir_name, output_directory):
             """
@@ -138,3 +134,16 @@ class Patient:
         """
 
         return self.patient_data["PatientName"].family_name.title()
+
+    def write_image(self, dataset, output_path):
+        """
+        Write single dicom image
+
+        :param dataset: pydicom dataset of the image
+        :param output_path: Path of the output image
+        :return: None
+        """
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # print("Writing anonymized image", output_path)
+        dataset.save_as(output_path)
