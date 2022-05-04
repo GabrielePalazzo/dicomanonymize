@@ -135,7 +135,8 @@ class Patient:
 
         return self.patient_data["PatientName"].family_name.title()
 
-    def write_image(self, dataset, output_path):
+    @staticmethod
+    def write_image(dataset, output_path):
         """
         Write single dicom image
 
