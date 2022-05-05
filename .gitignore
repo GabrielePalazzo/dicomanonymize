@@ -1,5 +1,6 @@
 src/dicomanonymize/__pycache__/
 src/*.egg-info/
+build/
 src/test/test/
 
 # Environments

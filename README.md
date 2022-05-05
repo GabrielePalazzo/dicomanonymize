@@ -12,3 +12,13 @@ Usage:
  - `-s`, `--single_thread`: run in single thread mode
 
 This script reduces execution times using CPU multithreading. You can force it into single thread mode with `-s` argument.
+
+## Install `dicomanonymize`
+
+You can install it from the repository:
+
+```
+git clone https://github.com/GabrielePalazzo/dicomanonymize
+cd dicomanonymize
+pip install --upgrade .
+```

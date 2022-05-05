@@ -8,10 +8,10 @@ import re
 import os
 from setuptools import setup, find_packages
 
-requirements = ["pydicom", "pandas", "numba"]
 package_name = "dicomanonymize"
 package_root = "src"
 repository_root = Path(__file__).parent
+requirements = (repository_root / "Requirements.txt").read_text()
 
 description = "Package for DICOM images anonymization"
 long_description = (repository_root / "README.md").read_text()
