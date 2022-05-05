@@ -60,17 +60,21 @@ class Patient:
             :return: None
             """
 
-            ds = dcmread(path)
-            for val in VALUES_TO_ANONYMIZE:
-                try:
-                    ds[val].value = self.anonymized_id
-                except Exception:
-                    pass
-                    # print(f"{val} not found in {path}")
+            try:
+                ds = dcmread(path)
+                for val in VALUES_TO_ANONYMIZE:
+                    try:
+                        ds[val].value = self.anonymized_id
+                    except Exception:
+                        pass
+                        # print(f"{val} not found in {path}")
 
-            output_path = output_directory / input_directory.parent.name / input_directory.name
-            output_path = anonymize_directory(output_path) / path.name
-            self.write_image(ds, output_path)
+                output_path = output_directory / input_directory.parent.name / input_directory.name
+                output_path = anonymize_directory(output_path) / path.name
+                self.write_image(ds, output_path)
+            except Exception:
+                pass
+                # print(f"Could not open {path}")
 
         def anonymize_directory(output_directory):
             """
