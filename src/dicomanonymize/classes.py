@@ -5,6 +5,9 @@ import re
 from multiprocessing.pool import ThreadPool
 from functools import partial
 
+from pydicom.dataset import Dataset
+from pathlib import Path
+
 
 VALUES_TO_ANONYMIZE = [
     "PatientName",
@@ -31,7 +34,7 @@ class Patient:
     destination_directories: list
     anonymized_id: str = ""
 
-    def generate_anonymized_id(self, index):
+    def generate_anonymized_id(self, index: int):
         """
         Generate an anonymized id
 
@@ -41,7 +44,7 @@ class Patient:
 
         self.anonymized_id = str(index)
 
-    def anonymize(self, output_dir, parallel=True):
+    def anonymize(self, output_dir: Path, parallel: bool = True):
         """
         Anonymize all patient data
 
@@ -50,7 +53,7 @@ class Patient:
         :return: None
         """
 
-        def anonymize_image(input_directory, output_directory, path):
+        def anonymize_image(input_directory: Path, output_directory: Path, path: Path):
             """
             Anonymize a single image
 
@@ -76,7 +79,7 @@ class Patient:
                 pass
                 # print(f"Could not open {path}")
 
-        def anonymize_directory(output_directory):
+        def anonymize_directory(output_directory: Path):
             """
             Anonymize the directory
 
@@ -115,7 +118,7 @@ class Patient:
                 for image in images:
                     anonymize_image(self.destination_directories[i], output_dir, image)
 
-    def given_name(self):
+    def given_name(self) -> str:
         """
         Patient given name
 
@@ -124,7 +127,7 @@ class Patient:
 
         return self.patient_data["PatientName"].given_name.title()
 
-    def last_name(self):
+    def last_name(self) -> str:
         """
         Patient last name
 
@@ -134,7 +137,7 @@ class Patient:
         return self.patient_data["PatientName"].family_name.title()
 
     @staticmethod
-    def write_image(dataset, output_path):
+    def write_image(dataset: Dataset, output_path: Path):
         """
         Write single dicom image
 

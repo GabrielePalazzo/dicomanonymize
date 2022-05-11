@@ -10,8 +10,15 @@ from numba import jit, int32, void
 
 from .classes import Patient, VALUES_TO_ANONYMIZE
 
+from pathlib import Path
 
-def anonymize(input_directory, output_directory=None, patients=None, parallel=True):
+
+def anonymize(
+    input_directory: Path,
+    output_directory: Path = None,
+    patients: list = None,
+    parallel: bool = True,
+):
     """
     Anonymize patients data
 
@@ -33,7 +40,7 @@ def anonymize(input_directory, output_directory=None, patients=None, parallel=Tr
     write_conversion_table(output_directory, patients)
 
 
-def get_directories(path):
+def get_directories(path: Path):
     """
     Get a list of subdirectories containing dicom images
 
@@ -62,7 +69,7 @@ def get_directories(path):
     return directories_for_anonymization
 
 
-def get_patients(lookup_directories):
+def get_patients(lookup_directories: list):
     """
     Get list of patients to be anonymized
 
@@ -122,7 +129,7 @@ def shuffle(array, num_times):
         array[y] = temp
 
 
-def generate_ids(seed, length):
+def generate_ids(seed: int, length: int):
     """
     Randomly generate ids
 
@@ -142,7 +149,7 @@ def generate_ids(seed, length):
     return ids
 
 
-def anonymize_id_patients(patients):
+def anonymize_id_patients(patients: list):
     """
     Generate an anonymized id for each patient
 
@@ -158,20 +165,20 @@ def anonymize_id_patients(patients):
         p.generate_anonymized_id(ids[i])
 
 
-def anonymize_patient(output_dir, parallel, patient):
+def anonymize_patient(output_dir: Path, parallel: bool, patient: Patient):
     """
     Generate an anonymized id for each patient
 
     :param output_dir: Path of the output directory
-    :param patients: Patient to be anonymized
     :param parallel: use CPU multithreading
+    :param patient: Patient to be anonymized
     :return: None
     """
 
     patient.anonymize(output_dir, parallel)
 
 
-def anonymize_patients(output_dir, patients, parallel):
+def anonymize_patients(output_dir: Path, patients: list, parallel: bool):
     """
     Generate an anonymized id for each patient
 
@@ -190,7 +197,7 @@ def anonymize_patients(output_dir, patients, parallel):
             anonymize_patient(output_dir, parallel, p)
 
 
-def read_patients(input_dir):
+def read_patients(input_dir: Path):
     """
     Read patients information
 
@@ -205,7 +212,7 @@ def read_patients(input_dir):
     return patients
 
 
-def write_conversion_table(output_directory, patients):
+def write_conversion_table(output_directory: Path, patients: list):
     """
     Write all patient information to a csv file, in order to be able to de-anonymize data
 
