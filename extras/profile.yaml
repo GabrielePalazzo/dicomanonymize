@@ -1,0 +1,21 @@
+strictness: medium
+
+doc-warnings: true
+
+max-line-length: 100
+
+inherits:
+  - default
+
+ignore-paths:
+  - venv
+  - .venv
+  - build
+
+ignore-patterns:
+  - .*__init__\.py$
+
+pydocstyle:
+  disable:
+    - D203
+    - D212

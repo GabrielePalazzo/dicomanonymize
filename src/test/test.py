@@ -1,3 +1,5 @@
+"""Test script."""
+
 import sys
 from pathlib import Path
 from os import listdir

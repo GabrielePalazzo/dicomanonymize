@@ -1,3 +1,5 @@
+"""Sample script."""
+
 import argparse
 import os.path
 from pathlib import Path
@@ -8,12 +10,11 @@ from dicomanonymize.functions import anonymize
 
 def parse_args(args=None):
     """
-    Parse command line arguments
+    Parse command line arguments.
 
     :param args: already parsed args
     :return: arguments
     """
-
     arg_parser = argparse.ArgumentParser(__doc__)
 
     arg_parser.add_argument(
@@ -29,6 +30,12 @@ def parse_args(args=None):
         type=Path,
     )
     arg_parser.add_argument(
+        "-d",
+        "--destination_directories",
+        help="Anonymize only destination directories",
+        action="store_true",
+    )
+    arg_parser.add_argument(
         "-s",
         "--single_thread",
         help="Run on single thread (slower but more robust)",
@@ -41,6 +48,11 @@ def parse_args(args=None):
 
 
 def main():
+    """
+    Main function.
+
+    :return: None
+    """
     anonymize_patients_start = time.time()
 
     arguments = parse_args()
@@ -57,7 +69,12 @@ def main():
         print(f"Using {input_dir} as output directory")
         output_dir = input_dir
 
-    anonymize(input_dir, output_dir, parallel=not arguments.single_thread)
+    anonymize(
+        input_dir,
+        output_dir,
+        parallel=not arguments.single_thread,
+        destination_directories=arguments.destination_directories,
+    )
 
     anonymize_patients_final = time.time()
     print(f"> Anonymize_Patients took: {anonymize_patients_final - anonymize_patients_start:.4}s")

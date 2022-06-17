@@ -1,3 +1,5 @@
+"""Anonymization and path acquisition functions."""
+
 from os import listdir
 from pydicom import dcmread
 import pandas as pd
@@ -18,17 +20,18 @@ def anonymize(
     output_directory: Path = None,
     patients: list = None,
     parallel: bool = True,
+    destination_directories: bool = False,
 ):
     """
-    Anonymize patients data
+    Anonymize patients data.
 
-    :param input_directory: Path of the input directory
-    :param output_directory: Path of the output directory
-    :param patients: list of Patient objects
-    :param parallel: use CPU multithreading
+    :param input_directory: Path of the input directory (Path)
+    :param output_directory: Path of the output directory (Path)
+    :param patients: list of Patient objects (list[Patient])
+    :param parallel: use CPU multithreading (bool)
+    :param destination_directories: anonymize only destination directories (bool)
     :return: None
     """
-
     if output_directory is None:
         output_directory = input_directory
     output_directory.mkdir(parents=True, exist_ok=True)
@@ -36,18 +39,17 @@ def anonymize(
     if patients is None:
         patients = read_patients(input_directory)
     anonymize_id_patients(patients)
-    anonymize_patients(output_directory, patients, parallel)
+    anonymize_patients(output_directory, patients, parallel, destination_directories)
     write_conversion_table(output_directory, patients)
 
 
 def get_directories(path: Path):
     """
-    Get a list of subdirectories containing dicom images
+    Get a list of subdirectories containing dicom images.
 
     :param path: Path
     :return: list of directories containing dicom images
     """
-
     studies_or_patients = listdir(path)
 
     directories_for_anonymization = []
@@ -71,12 +73,11 @@ def get_directories(path: Path):
 
 def get_patients(lookup_directories: list):
     """
-    Get list of patients to be anonymized
+    Get list of patients to be anonymized.
 
     :param lookup_directories: list of directories
     :return: list of Patient objects
     """
-
     patients = []
     for d in lookup_directories:
         files = listdir(d)
@@ -114,13 +115,12 @@ def get_patients(lookup_directories: list):
 @jit(void(int32[:], int32), nopython=True)
 def shuffle(array, num_times):
     """
-    Shuffle the array
+    Shuffle the array.
 
     :param array: np.array of int32 to be shuffled
     :param num_times: int number of times to shuffle the array
     :return: None
     """
-
     for _ in range(num_times):
         x = random.randint(0, len(array) - 1)
         y = random.randint(0, len(array) - 1)
@@ -131,13 +131,12 @@ def shuffle(array, num_times):
 
 def generate_ids(seed: int, length: int):
     """
-    Randomly generate ids
+    Randomly generate ids.
 
     :param seed: int
     :param length: int length of the generated array
     :return: list of ids
     """
-
     ids = np.arange(length, dtype=np.int32)
 
     # this ensures constant behavior
@@ -151,12 +150,11 @@ def generate_ids(seed: int, length: int):
 
 def anonymize_id_patients(patients: list):
     """
-    Generate an anonymized id for each patient
+    Generate an anonymized id for each patient.
 
     :param patients: list of Patient objects
     :return: None
     """
-
     seed = 0
     length = max(len(patients), 1000)
     ids = generate_ids(seed, length)
@@ -165,46 +163,45 @@ def anonymize_id_patients(patients: list):
         p.generate_anonymized_id(ids[i])
 
 
-def anonymize_patient(output_dir: Path, parallel: bool, patient: Patient):
+def anonymize_patient(output_dir: Path, parallel: bool, dest_directory: bool, patient: Patient):
     """
-    Generate an anonymized id for each patient
+    Generate an anonymized id for each patient.
 
     :param output_dir: Path of the output directory
     :param parallel: use CPU multithreading
+    :param dest_directory: anonymize only the destination directory (bool)
     :param patient: Patient to be anonymized
     :return: None
     """
+    patient.anonymize(output_dir, parallel, dest_directory)
 
-    patient.anonymize(output_dir, parallel)
 
-
-def anonymize_patients(output_dir: Path, patients: list, parallel: bool):
+def anonymize_patients(output_dir: Path, patients: list, parallel: bool, dest_dir: bool = False):
     """
-    Generate an anonymized id for each patient
+    Generate an anonymized id for each patient.
 
     :param output_dir: Path of the output directory
     :param patients: list of Patient objects
     :param parallel: use CPU multithreading
+    :param dest_dir: anonymize only the destination directory (bool)
     :return: None
     """
-
     if parallel:
         num_threads = max(len(patients), 1)
         with ThreadPool(num_threads) as p:
-            p.map(partial(anonymize_patient, output_dir, parallel), patients)
+            p.map(partial(anonymize_patient, output_dir, parallel, dest_dir), patients)
     else:
         for p in patients:
-            anonymize_patient(output_dir, parallel, p)
+            anonymize_patient(output_dir, parallel, dest_dir, p)
 
 
 def read_patients(input_dir: Path):
     """
-    Read patients information
+    Read patients information.
 
     :param input_dir: Path of the input directory
     :return: list of patients
     """
-
     lookup_directories = get_directories(input_dir)
 
     patients = get_patients(lookup_directories)
@@ -214,13 +211,12 @@ def read_patients(input_dir: Path):
 
 def write_conversion_table(output_directory: Path, patients: list):
     """
-    Write all patient information to a csv file, in order to be able to de-anonymize data
+    Write all patient information to a csv file, in order to be able to de-anonymize data.
 
     :param output_directory: Path of the output directory
     :param patients: list of Patient objects
     :return: None
     """
-
     df = pd.DataFrame()
 
     position = 0
@@ -248,7 +244,8 @@ def write_conversion_table(output_directory: Path, patients: list):
         csv_name = f'Anonymization-{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.csv'
         if csv_name in listdir(output_directory):
             print(
-                "Cannot find a unique name for the conversion table. Aborting write_conversion_table..."
+                "Cannot find a unique name for the conversion table."
+                + " Aborting write_conversion_table..."
             )
             return
 
