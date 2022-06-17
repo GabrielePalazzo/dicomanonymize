@@ -14,6 +14,7 @@ ignore-paths:
 
 ignore-patterns:
   - .*__init__\.py$
+  - .*test\.py$
 
 pydocstyle:
   disable:
