@@ -70,7 +70,6 @@ def test_anonymization():
             assert family_name not in d
         try:
             dirs = listdir(anonymized_dir / d)
-            ds = dcmread(anonymized_dir / d /)
             control_study(anonymized_dir / d, dirs)
         except Exception:
             # csv files are not directories
