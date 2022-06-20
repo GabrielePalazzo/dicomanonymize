@@ -50,13 +50,19 @@ def control_study(path, directories):
             control_image(path / directory / image)
 
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+def test_anonymization():
 
-    test_dir = (Path.cwd() / sys.argv[0]).parent
+    #test_dir = (Path.cwd() / sys.argv[0]).parent
+    test_dir = Path(__file__).parent
 
-    anonymized_dir = test_dir / "test"
+    anonymized_dir = test_dir# / "test"
 
     sub_dirs = listdir(anonymized_dir)
+    try:
+        sub_dirs.remove("__pycache__")
+    except ValueError:
+        pass
 
     for d in sub_dirs:
         # patient directories must not contain patient names
@@ -64,6 +70,7 @@ if __name__ == "__main__":
             assert family_name not in d
         try:
             dirs = listdir(anonymized_dir / d)
+            ds = dcmread(anonymized_dir / d /)
             control_study(anonymized_dir / d, dirs)
         except Exception:
             # csv files are not directories

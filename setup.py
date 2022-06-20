@@ -46,7 +46,7 @@ setup(
     classifiers=[],
     python_requires=">=3.6",
     install_requires=requirements,
-    extras_require={"test": ["prospector"]},
+    extras_require={"test": ["prospector", "pytest"]},
     entry_points={
         "console_scripts": [
             "dicomanonymize = dicomanonymize.scripts.dicomanonymize_script:main",
