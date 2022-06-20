@@ -56,7 +56,7 @@ def test_anonymization():
     #test_dir = (Path.cwd() / sys.argv[0]).parent
     test_dir = Path(__file__).parent
 
-    anonymized_dir = test_dir# / "test"
+    anonymized_dir = test_dir / "test"
 
     sub_dirs = listdir(anonymized_dir)
     try:
