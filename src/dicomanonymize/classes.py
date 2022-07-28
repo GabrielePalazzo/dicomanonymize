@@ -45,7 +45,7 @@ class Patient:
     destination_directories: list
     anonymized_id: str = ""
 
-    def generate_anonymized_id(self, index: int):
+    def generate_anonymized_id(self, index: int) -> None:
         """
         Generate an anonymized id.
 
@@ -54,7 +54,9 @@ class Patient:
         """
         self.anonymized_id = str(index)
 
-    def anonymize(self, output_dir: Path, parallel: bool = True, only_directory: bool = False):
+    def anonymize(
+        self, output_dir: Path, parallel: bool = True, only_directory: bool = False
+    ) -> None:
         """
         Anonymize all patient data.
 
@@ -64,7 +66,7 @@ class Patient:
         :return: None
         """
 
-        def anonymize_directory(output_directory: Path):
+        def anonymize_directory(output_directory: Path) -> Path:
             """
             Anonymize the directory.
 
@@ -78,14 +80,18 @@ class Patient:
             output_directory = output_directory.parent / temp_dir
 
             temp_dir = output_directory.parent.name
-            temp_dir = re.sub(self.last_name().lower(), self.anonymized_id, temp_dir.lower())
+            temp_dir = re.sub(
+                rf"{self.last_name().lower()}(\^|$)",
+                rf"{self.anonymized_id}\g<1>",
+                temp_dir.lower(),
+            )
             output = output_directory.parent.parent / temp_dir / output_directory.name
 
             return output
 
         def anonymize_image(
             input_directory: Path, output_directory: Path, only_dir: bool, path: Path
-        ):
+        ) -> None:
             """
             Anonymize a single image.
 
@@ -96,27 +102,27 @@ class Patient:
             :return: None
             """
             try:
-                ds = dcmread(path)
+                dicom_slice = dcmread(path)
                 if only_dir is False:
                     for val in VALUES_TO_ANONYMIZE:
                         try:
-                            ds[val].value = self.anonymized_id
+                            dicom_slice[val].value = self.anonymized_id
                         except Exception:
                             pass
                             # print(f"{val} not found in {path}")
                 output_path = output_directory / input_directory.parent.name / input_directory.name
                 output_path = anonymize_directory(output_path) / path.name
-                self.write_image(ds, output_path)
+                self.write_image(dicom_slice, output_path)
             except Exception:
                 pass
                 # print(f"Could not open {path}")
 
         images = []
-        for i, d in enumerate(self.source_directories):
-            files = listdir(d)
+        for i, source_directory in enumerate(self.source_directories):
+            files = listdir(source_directory)
             for f in files:
                 if f.endswith(".dcm"):
-                    images.append(d / f)
+                    images.append(source_directory / f)
 
             # anonymize all images
             if parallel:
@@ -154,7 +160,7 @@ class Patient:
         return self.patient_data["PatientName"].family_name.title()
 
     @staticmethod
-    def write_image(dataset: Dataset, output_path: Path):
+    def write_image(dataset: Dataset, output_path: Path) -> None:
         """
         Write single dicom image.
 

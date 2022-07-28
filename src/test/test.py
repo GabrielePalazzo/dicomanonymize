@@ -50,10 +50,7 @@ def control_study(path, directories):
             control_image(path / directory / image)
 
 
-#if __name__ == "__main__":
 def test_anonymization():
-
-    #test_dir = (Path.cwd() / sys.argv[0]).parent
     test_dir = Path(__file__).parent
 
     anonymized_dir = test_dir / "test"

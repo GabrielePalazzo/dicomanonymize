@@ -1,5 +1,6 @@
 """Anonymization and path acquisition functions."""
 
+from typing import List
 from os import listdir
 from pydicom import dcmread
 import pandas as pd
@@ -21,7 +22,7 @@ def anonymize(
     patients: list = None,
     parallel: bool = True,
     destination_directories: bool = False,
-):
+) -> None:
     """
     Anonymize patients data.
 
@@ -43,35 +44,53 @@ def anonymize(
     write_conversion_table(output_directory, patients)
 
 
-def get_directories(path: Path):
+def look_into_study_directories(
+    study_directory_path: Path, patient_images: List[str]
+) -> List[Path]:
+    """
+    Look for dicom images inside "Studies_xx" folder.
+
+    :param study_directory_path: path to "Studies_xx" directory
+    :param patient_images: list of folders containing dicom images
+    :return: list of directories containing dicom images inside selected study folder
+    """
+    directories_for_anonymization = []
+    for patient_image in patient_images:
+        patient_data: List[str] = listdir(study_directory_path / patient_image)
+        for d in patient_data:
+            if d.endswith(".dcm"):
+                directories_for_anonymization.append(study_directory_path / patient_image)
+                break
+    return directories_for_anonymization
+
+
+def get_directories(path: Path) -> List[Path]:
     """
     Get a list of subdirectories containing dicom images.
 
     :param path: Path
     :return: list of directories containing dicom images
     """
-    studies_or_patients = listdir(path)
+    studies_or_patients: List[str] = listdir(path)
 
     directories_for_anonymization = []
 
     for study_or_patient in studies_or_patients:
         try:
-            patient_images = listdir(path / study_or_patient)
-            for patient_image in patient_images:
-                patient_data = listdir(path / study_or_patient / patient_image)
-                for d in patient_data:
-                    if d.endswith(".dcm"):
-                        directories_for_anonymization.append(
-                            path / study_or_patient / patient_image
-                        )
-                        break
+            patient_images: List[str] = listdir(path / study_or_patient)
+            if patient_images[0].endswith(".dcm"):
+                directories_for_anonymization.append(path / study_or_patient)
+            else:
+                directories_for_anonymization.extend(
+                    look_into_study_directories(path / study_or_patient, patient_images)
+                )
         except Exception:
             print("Not a directory")
 
     return directories_for_anonymization
 
 
-def get_patients(lookup_directories: list):
+def get_patients(lookup_directories: List[Path]) -> List[Patient]:
     """
     Get list of patients to be anonymized.
 
@@ -80,7 +99,7 @@ def get_patients(lookup_directories: list):
     """
     patients = []
     for d in lookup_directories:
-        files = listdir(d)
+        files: List[str] = listdir(d)
         images = []
         for f in files:
             if f.endswith(".dcm"):
@@ -113,7 +132,7 @@ def get_patients(lookup_directories: list):
 
 
 @jit(void(int32[:], int32), nopython=True)
-def shuffle(array, num_times):
+def shuffle(array: np.ndarray, num_times: int) -> None:
     """
     Shuffle the array.
 
@@ -129,7 +148,7 @@ def shuffle(array, num_times):
         array[y] = temp
 
 
-def generate_ids(seed: int, length: int):
+def generate_ids(seed: int, length: int) -> np.ndarray:
     """
     Randomly generate ids.
 
@@ -148,7 +167,7 @@ def generate_ids(seed: int, length: int):
     return ids
 
 
-def anonymize_id_patients(patients: list):
+def anonymize_id_patients(patients: List[Patient]) -> None:
     """
     Generate an anonymized id for each patient.
 
@@ -163,39 +182,43 @@ def anonymize_id_patients(patients: list):
         p.generate_anonymized_id(ids[i])
 
 
-def anonymize_patient(output_dir: Path, parallel: bool, dest_directory: bool, patient: Patient):
+def anonymize_patient(
+    output_dir: Path, parallel: bool, destination_directory: bool, patient: Patient
+) -> None:
     """
     Generate an anonymized id for each patient.
 
     :param output_dir: Path of the output directory
     :param parallel: use CPU multithreading
-    :param dest_directory: anonymize only the destination directory (bool)
+    :param destination_directory: anonymize only the destination directory (bool)
     :param patient: Patient to be anonymized
     :return: None
     """
-    patient.anonymize(output_dir, parallel, dest_directory)
+    patient.anonymize(output_dir, parallel, destination_directory)
 
 
-def anonymize_patients(output_dir: Path, patients: list, parallel: bool, dest_dir: bool = False):
+def anonymize_patients(
+    output_dir: Path, patients: List[Patient], parallel: bool, destination_dir: bool = False
+) -> None:
     """
     Generate an anonymized id for each patient.
 
     :param output_dir: Path of the output directory
     :param patients: list of Patient objects
     :param parallel: use CPU multithreading
-    :param dest_dir: anonymize only the destination directory (bool)
+    :param destination_dir: anonymize only the destination directory (bool)
     :return: None
     """
     if parallel:
         num_threads = max(len(patients), 1)
         with ThreadPool(num_threads) as p:
-            p.map(partial(anonymize_patient, output_dir, parallel, dest_dir), patients)
+            p.map(partial(anonymize_patient, output_dir, parallel, destination_dir), patients)
     else:
         for p in patients:
-            anonymize_patient(output_dir, parallel, dest_dir, p)
+            anonymize_patient(output_dir, parallel, destination_dir, p)
 
 
-def read_patients(input_dir: Path):
+def read_patients(input_dir: Path) -> List[Patient]:
     """
     Read patients information.
 
@@ -209,7 +232,7 @@ def read_patients(input_dir: Path):
     return patients
 
 
-def write_conversion_table(output_directory: Path, patients: list):
+def write_conversion_table(output_directory: Path, patients: List[Patient]) -> None:
     """
     Write all patient information to a csv file, in order to be able to de-anonymize data.
 
