@@ -26,6 +26,7 @@ VALUES_TO_ANONYMIZE = [
     "AcquisitionTime",
     "ContentTime",
     "AccessionNumber",
+    "ReferringPhysicianName",
 ]
 
 

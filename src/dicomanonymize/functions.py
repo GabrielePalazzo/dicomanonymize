@@ -5,7 +5,8 @@ from os import listdir
 from pydicom import dcmread
 import pandas as pd
 import datetime
-from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import Pool, ThreadPool
+from multiprocessing import cpu_count
 from functools import partial
 import numpy as np
 import random
@@ -98,33 +99,34 @@ def get_patients(lookup_directories: List[Path]) -> List[Patient]:
     :return: list of Patient objects
     """
     patients = []
-    for d in lookup_directories:
-        files: List[str] = listdir(d)
+    for image_directory in lookup_directories:
+        files: List[str] = listdir(image_directory)
         images = []
-        for f in files:
-            if f.endswith(".dcm"):
-                images.append(f)
-        ds = dcmread(d / images[0])
+        for dicom_file in files:
+            # Keep only dicom files
+            if dicom_file.endswith(".dcm"):
+                images.append(dicom_file)
+        dicom_image = dcmread(image_directory / images[0])
         already_defined = False
-        for p in patients:
-            if p.patient_data["PatientID"] == ds.PatientID:
+        for patient in patients:
+            if patient.patient_data["PatientID"] == dicom_image.PatientID:
                 already_defined = True
-                p.source_directories.append(d)
-                p.destination_directories.append(d)
+                patient.source_directories.append(image_directory)
+                patient.destination_directories.append(image_directory)
                 break
         if not already_defined:
             temp_dict = {}
-            for val in VALUES_TO_ANONYMIZE:
+            for value_to_anonymize in VALUES_TO_ANONYMIZE:
                 try:
-                    temp_dict[val] = ds[val].value
+                    temp_dict[value_to_anonymize] = dicom_image[value_to_anonymize].value
                 except Exception:
-                    # print(f"{val} not found")
-                    temp_dict[val] = None
+                    # print(f"{value_to_anonymize} not found")
+                    temp_dict[value_to_anonymize] = None
             patients.append(
                 Patient(
                     temp_dict,
-                    [d],
-                    [d],
+                    [image_directory],
+                    [image_directory],
                 )
             )
 
@@ -175,11 +177,12 @@ def anonymize_id_patients(patients: List[Patient]) -> None:
     :return: None
     """
     seed = 0
-    length = max(len(patients), 1000)
+    # generate enough numbers in order to have a "random" pattern
+    length = max(len(patients * 10), 1000)
     ids = generate_ids(seed, length)
 
-    for i, p in enumerate(patients):
-        p.generate_anonymized_id(ids[i])
+    for i, patient in enumerate(patients):
+        patient.generate_anonymized_id(ids[i])
 
 
 def anonymize_patient(
@@ -211,11 +214,18 @@ def anonymize_patients(
     """
     if parallel:
         num_threads = max(len(patients), 1)
-        with ThreadPool(num_threads) as p:
-            p.map(partial(anonymize_patient, output_dir, parallel, destination_dir), patients)
+        # Somehow multiprocessing.pool.ThreadPool is faster with just a few threads
+        # and multiprocessing.pool.Pool is significantly faster with many threads
+        if num_threads >= 8:
+            # multiprocessing.pool.Pool crashes with too many threads
+            with Pool(min(num_threads, cpu_count())) as p:
+                p.map(partial(anonymize_patient, output_dir, parallel, destination_dir), patients)
+        else:
+            with ThreadPool(num_threads) as p:
+                p.map(partial(anonymize_patient, output_dir, parallel, destination_dir), patients)
     else:
-        for p in patients:
-            anonymize_patient(output_dir, parallel, destination_dir, p)
+        for patient in patients:
+            anonymize_patient(output_dir, parallel, destination_dir, patient)
 
 
 def read_patients(input_dir: Path) -> List[Patient]:
