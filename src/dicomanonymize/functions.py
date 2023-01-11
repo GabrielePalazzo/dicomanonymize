@@ -20,7 +20,7 @@ from pathlib import Path
 def anonymize(
     input_directory: Path,
     output_directory: Path = None,
-    patients: list = None,
+    patients: List[Patient] = None,
     parallel: bool = True,
     destination_directories: bool = False,
 ) -> None:
