@@ -1,8 +1,8 @@
 """Patient class and anonymization functions."""
 
+from typing import List
 from dataclasses import dataclass
 from pydicom import dcmread
-from os import listdir
 import re
 from multiprocessing.pool import ThreadPool
 from functools import partial
@@ -42,8 +42,8 @@ class Patient:
     """
 
     patient_data: dict
-    source_directories: list
-    destination_directories: list
+    source_directories: List[Path]
+    destination_directories: List[Path]
     anonymized_id: str = ""
 
     def generate_anonymized_id(self, index: int) -> None:
@@ -120,10 +120,10 @@ class Patient:
 
         images = []
         for i, source_directory in enumerate(self.source_directories):
-            files = listdir(source_directory)
+            files = list(source_directory.iterdir())
             for f in files:
-                if f.endswith(".dcm"):
-                    images.append(source_directory / f)
+                if f.name.endswith(".dcm"):
+                    images.append(f)
 
             # anonymize all images
             if parallel:

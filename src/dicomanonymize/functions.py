@@ -72,18 +72,18 @@ def get_directories(path: Path) -> List[Path]:
     :param path: Path
     :return: list of directories containing dicom images
     """
-    studies_or_patients: List[str] = listdir(path)
+    studies_or_patients = list(path.iterdir())
 
     directories_for_anonymization = []
 
     for study_or_patient in studies_or_patients:
         try:
-            patient_images: List[str] = listdir(path / study_or_patient)
+            patient_images = [image_path.name for image_path in study_or_patient.iterdir()]
             if patient_images[0].endswith(".dcm"):
-                directories_for_anonymization.append(path / study_or_patient)
+                directories_for_anonymization.append(study_or_patient)
             else:
                 directories_for_anonymization.extend(
-                    look_into_study_directories(path / study_or_patient, patient_images)
+                    look_into_study_directories(study_or_patient, patient_images)
                 )
         except Exception:
             print("Not a directory")
@@ -100,7 +100,7 @@ def get_patients(lookup_directories: List[Path]) -> List[Patient]:
     """
     patients = []
     for image_directory in lookup_directories:
-        files: List[str] = listdir(image_directory)
+        files = [image_file.name for image_file in image_directory.iterdir()]
         images = []
         for dicom_file in files:
             # Keep only dicom files
