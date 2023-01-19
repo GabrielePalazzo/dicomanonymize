@@ -1,7 +1,6 @@
 """Anonymization and path acquisition functions."""
 
 from typing import List
-from os import listdir
 from pydicom import dcmread
 import pandas as pd
 import datetime
@@ -45,22 +44,19 @@ def anonymize(
     write_conversion_table(output_directory, patients)
 
 
-def look_into_study_directories(
-    study_directory_path: Path, patient_images: List[str]
-) -> List[Path]:
+def look_into_study_directories(patient_images: List[Path]) -> List[Path]:
     """
     Look for dicom images inside "Studies_xx" folder.
 
-    :param study_directory_path: path to "Studies_xx" directory
-    :param patient_images: list of folders containing dicom images
+    :param patient_images: list of paths of folders containing dicom images
     :return: list of directories containing dicom images inside selected study folder
     """
     directories_for_anonymization = []
     for patient_image in patient_images:
-        patient_data: List[str] = listdir(study_directory_path / patient_image)
+        patient_data = [patient_data.name for patient_data in patient_image.iterdir()]
         for d in patient_data:
             if d.endswith(".dcm"):
-                directories_for_anonymization.append(study_directory_path / patient_image)
+                directories_for_anonymization.append(patient_image)
                 break
     return directories_for_anonymization
 
@@ -72,19 +68,17 @@ def get_directories(path: Path) -> List[Path]:
     :param path: Path
     :return: list of directories containing dicom images
     """
-    studies_or_patients = list(path.iterdir())
+    studies_or_patients = path.iterdir()
 
     directories_for_anonymization = []
 
     for study_or_patient in studies_or_patients:
         try:
-            patient_images = [image_path.name for image_path in study_or_patient.iterdir()]
-            if patient_images[0].endswith(".dcm"):
+            patient_images = list(study_or_patient.iterdir())
+            if patient_images[0].name.endswith(".dcm"):
                 directories_for_anonymization.append(study_or_patient)
             else:
-                directories_for_anonymization.extend(
-                    look_into_study_directories(study_or_patient, patient_images)
-                )
+                directories_for_anonymization.extend(look_into_study_directories(patient_images))
         except Exception:
             print("Not a directory")
 
@@ -271,11 +265,11 @@ def write_conversion_table(output_directory: Path, patients: List[Patient]) -> N
 
     csv_name = "Anonymization.csv"
 
-    files_list = listdir(output_directory)
+    files_list = [file_in_directory.name for file_in_directory in output_directory.iterdir()]
 
     if csv_name in files_list:
         csv_name = f'Anonymization-{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.csv'
-        if csv_name in listdir(output_directory):
+        if csv_name in [file_in_directory.name for file_in_directory in output_directory.iterdir()]:
             print(
                 "Cannot find a unique name for the conversion table."
                 + " Aborting write_conversion_table..."
