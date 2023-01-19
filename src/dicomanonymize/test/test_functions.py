@@ -76,5 +76,3 @@ def test_anonymization():
             # everything else must be a directory
             assert d.name.startswith("Anonymization") is True
             assert d.name.endswith(".csv") is True
-
-    print("Passing")
