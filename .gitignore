@@ -2,8 +2,8 @@ src/dicomanonymize/__pycache__/
 src/dicomanonymize/scripts/__pycache__/
 src/*.egg-info/
 build/
-src/test/test/
-src/test/__pycache__/
+src/dicomanonymize/test/test/
+src/dicomanonymize/test/__pycache__/
 
 # Environments
 .env
